@@ -38,14 +38,16 @@ export interface CostRow {
 
 function parseDate(str: string): Date {
   if (!str) return new Date(0)
-  // DD/MM/YYYY
-  const parts = str.trim().split('/')
-  if (parts.length === 3) {
+  const s = str.trim().split(' ')[0]
+  const parts = s.split('/')
+  if (parts.length === 3 && parts[2].length === 4) {
     return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
   }
-  // YYYY-MM-DD
-  const d = new Date(str.trim())
-  return isNaN(d.getTime()) ? new Date(0) : d
+  const parts2 = s.split('-')
+  if (parts2.length === 3 && parts2[0].length === 4) {
+    return new Date(Number(parts2[0]), Number(parts2[1]) - 1, Number(parts2[2]))
+  }
+  return new Date(0)
 }
 
 function parseBRL(val: string): number {
