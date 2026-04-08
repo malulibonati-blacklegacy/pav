@@ -117,17 +117,29 @@ export default function Home() {
 
   // Apply filters
   const filterLeads = (rows: LeadRow[]) => rows.filter(r => {
-    if (dateFrom && r.dateObj < new Date(dateFrom)) return false
-    if (dateTo && r.dateObj > new Date(dateTo + 'T23:59:59')) return false
+    if (dateFrom) {
+  const [y,m,d] = dateFrom.split('-').map(Number)
+  if (r.dateObj < new Date(y, m-1, d)) return false
+}
+if (dateTo) {
+  const [y,m,d] = dateTo.split('-').map(Number)
+  if (r.dateObj > new Date(y, m-1, d, 23, 59, 59)) return false
+}
     if (fonte !== 'all' && r.fonte !== fonte) return false
     if (plataforma !== 'all' && r.plataforma !== plataforma) return false
     return true
   })
   const filterCosts = (rows: CostRow[]) => rows.filter(r => {
-    if (dateFrom && r.dateObj < new Date(dateFrom)) return false
-    if (dateTo && r.dateObj > new Date(dateTo + 'T23:59:59')) return false
-    return true
-  })
+  if (dateFrom) {
+    const [y,m,d] = dateFrom.split('-').map(Number)
+    if (r.dateObj < new Date(y, m-1, d)) return false
+  }
+  if (dateTo) {
+    const [y,m,d] = dateTo.split('-').map(Number)
+    if (r.dateObj > new Date(y, m-1, d, 23, 59, 59)) return false
+  }
+  return true
+})
 
   const filteredLeads = data ? filterLeads(data.leads) : []
   const filteredGoogle = data ? filterCosts(data.googleCosts) : []
