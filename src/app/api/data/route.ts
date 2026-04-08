@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
 import { sheetCsvUrl, parseLeadsCsv, parseCostCsv } from '@/lib/data'
 
-export const revalidate = 900 // 15 min cache
+export const revalidate = 0
 
 export async function GET() {
   try {
     const [leadsRes, googleRes, metaRes] = await Promise.all([
-      fetch(sheetCsvUrl('Base_Looker'), { next: { revalidate: 900 } }),
-      fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { next: { revalidate: 900 } }),
-      fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { next: { revalidate: 900 } }),
+      fetch(sheetCsvUrl('Base_Looker'), { cache: 'no-store' }),
+      fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { cache: 'no-store' }),
+      fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { cache: 'no-store' }),
     ])
 
     const [leadsCsv, googleCsv, metaCsv] = await Promise.all([
