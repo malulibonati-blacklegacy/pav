@@ -6,7 +6,7 @@ export const revalidate = 900 // 15 min cache
 export async function GET() {
   try {
     const [leadsRes, googleRes, metaRes] = await Promise.all([
-      fetch(sheetCsvUrl('Base Looker'), { next: { revalidate: 900 } }),
+      fetch(sheetCsvUrl('Base_Looker'), { next: { revalidate: 900 } }),
       fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { next: { revalidate: 900 } }),
       fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { next: { revalidate: 900 } }),
     ])
