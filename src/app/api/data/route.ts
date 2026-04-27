@@ -3,41 +3,43 @@ import { sheetCsvUrl, parseLeadsCsv, parseGoogleCostCsv, parseMetaCostCsv, parse
 
 export const revalidate = 0
 
-async function fetchAllLeads(sheetName: string): Promise<string> {
-  // Fetch in chunks using range parameter
-  const baseUrl = `https://docs.google.com/spreadsheets/d/${process.env.NEXT_PUBLIC_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`
-  
-  // First fetch to get header + first batch
-  const res1 = await fetch(`${baseUrl}&range=A1:S5001`, { cache: 'no-store' })
-  const text1 = await res1.text()
-  const lines1 = text1.split('\n').filter(l => l.trim())
-  const header = lines1[0]
-  
-  // Second fetch (rows 5002-10001)
-  const res2 = await fetch(`${baseUrl}&range=A5002:S10001`, { cache: 'no-store' })
-  const text2 = await res2.text()
-  const lines2 = text2.split('\n').filter(l => l.trim())
-  
-  // Third fetch (rows 10002-15001)
-  const res3 = await fetch(`${baseUrl}&range=A10002:S15001`, { cache: 'no-store' })
-  const text3 = await res3.text()
-  const lines3 = text3.split('\n').filter(l => l.trim())
+const SHEET_ID = process.env.NEXT_PUBLIC_SHEET_ID!
 
-  // Combine: header + data from all chunks
-  const allLines = [
-    header,
-    ...lines1.slice(1),
-    ...lines2, // no header in range fetches
-    ...lines3,
+async function fetchAllLeads(): Promise<string> {
+  const chunks: string[] = []
+  let header = ''
+  
+  const ranges = [
+    'A1:S5000',
+    'A5001:S10000', 
+    'A10001:S15000',
+    'A15001:S20000',
   ]
   
-  return allLines.join('\n')
+  for (let i = 0; i < ranges.length; i++) {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Base_Looker&range=${ranges[i]}`
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) break
+    const text = await res.text()
+    const lines = text.split('\n').filter(l => l.trim())
+    if (lines.length <= 1) break
+    
+    if (i === 0) {
+      header = lines[0]
+      chunks.push(...lines.slice(1))
+    } else {
+      // Skip header row in subsequent chunks
+      chunks.push(...lines.slice(1))
+    }
+  }
+  
+  return [header, ...chunks].join('\n')
 }
 
 export async function GET() {
   try {
     const [leadsCsv, googleCsv, metaCsv] = await Promise.all([
-      fetchAllLeads('Base_Looker'),
+      fetchAllLeads(),
       fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { cache: 'no-store' }).then(r => r.text()),
       fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { cache: 'no-store' }).then(r => r.text()),
     ])
