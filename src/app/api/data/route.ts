@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
-import { sheetCsvUrl, parseLeadsCsv, parseCostCsv } from '@/lib/data'
+import { sheetCsvUrl, parseLeadsCsv, parseGoogleCostCsv, parseMetaCostCsv, parseCostCsv } from '@/lib/data'
 
-export const revalidate = 900 // 15 min cache
+export const revalidate = 0
 
 export async function GET() {
   try {
     const [leadsRes, googleRes, metaRes] = await Promise.all([
-      fetch(sheetCsvUrl('Base_Looker'), { next: { revalidate: 900 } }),
-      fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { next: { revalidate: 900 } }),
-      fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { next: { revalidate: 900 } }),
+      fetch(sheetCsvUrl('Base_Looker'), { cache: 'no-store' }),
+      fetch(sheetCsvUrl('Custo_Campanha-Googleads'), { cache: 'no-store' }),
+      fetch(sheetCsvUrl('Custo_Campanha-Metaads'), { cache: 'no-store' }),
     ])
 
     const [leadsCsv, googleCsv, metaCsv] = await Promise.all([
@@ -18,10 +18,14 @@ export async function GET() {
     ])
 
     const leads = parseLeadsCsv(leadsCsv)
-    const googleCosts = parseCostCsv(googleCsv, 'google')
-    const metaCosts = parseCostCsv(metaCsv, 'meta')
+    const googleCosts = parseGoogleCostCsv(googleCsv)
+    const metaCosts = parseMetaCostCsv(metaCsv)
 
-    return NextResponse.json({ leads, googleCosts, metaCosts })
+    // Legacy simplified for Overview
+    const googleCostsSimple = parseCostCsv(googleCsv, 'google')
+    const metaCostsSimple = parseCostCsv(metaCsv, 'meta')
+
+    return NextResponse.json({ leads, googleCosts, metaCosts, googleCostsSimple, metaCostsSimple })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Falha ao carregar dados' }, { status: 500 })

@@ -3,11 +3,17 @@ import { useState, useEffect, useCallback } from 'react'
 import OverviewTab from '@/components/OverviewTab'
 import GoogleTab from '@/components/GoogleTab'
 import MetaTab from '@/components/MetaTab'
-import { LeadRow, CostRow } from '@/lib/data'
+import { LeadRow, CostRow, GoogleCostRow, MetaCostRow } from '@/lib/data'
 import { LOGO_B64 } from '@/lib/logo'
 
 type Tab = 'overview' | 'google' | 'meta'
-interface DashData { leads: LeadRow[]; googleCosts: CostRow[]; metaCosts: CostRow[] }
+interface DashData {
+  leads: LeadRow[]
+  googleCosts: GoogleCostRow[]
+  metaCosts: MetaCostRow[]
+  googleCostsSimple: CostRow[]
+  metaCostsSimple: CostRow[]
+}
 
 const GoogleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -17,7 +23,6 @@ const GoogleIcon = () => (
     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
   </svg>
 )
-
 const MetaIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24">
     <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
@@ -75,8 +80,10 @@ export default function Home() {
       const res = await fetch('/api/data')
       const json = await res.json()
       json.leads = json.leads.map((r: LeadRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
-      json.googleCosts = json.googleCosts.map((r: CostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
-      json.metaCosts = json.metaCosts.map((r: CostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
+      json.googleCosts = json.googleCosts.map((r: GoogleCostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
+      json.metaCosts = json.metaCosts.map((r: MetaCostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
+      json.googleCostsSimple = json.googleCostsSimple.map((r: CostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
+      json.metaCostsSimple = json.metaCostsSimple.map((r: CostRow) => ({ ...r, dateObj: new Date(r.dateObj) }))
       setData(json); setLastUpdate(new Date())
     } catch { console.error('Erro ao buscar dados') }
     setLoading(false)
@@ -97,7 +104,7 @@ export default function Home() {
     if (plataforma !== 'all' && r.plataforma !== plataforma) return false
     return true
   })
-  const filterCosts = (rows: CostRow[]) => rows.filter(r => {
+  const filterCosts = <T extends { dateObj: Date }>(rows: T[]) => rows.filter(r => {
     if (dateFrom) { const [y,m,d] = dateFrom.split('-').map(Number); if (r.dateObj < new Date(y,m-1,d)) return false }
     if (dateTo) { const [y,m,d] = dateTo.split('-').map(Number); if (r.dateObj > new Date(y,m-1,d,23,59,59)) return false }
     return true
@@ -106,6 +113,8 @@ export default function Home() {
   const filteredLeads = data ? filterLeads(data.leads) : []
   const filteredGoogle = data ? filterCosts(data.googleCosts) : []
   const filteredMeta = data ? filterCosts(data.metaCosts) : []
+  const filteredGoogleSimple = data ? filterCosts(data.googleCostsSimple) : []
+  const filteredMetaSimple = data ? filterCosts(data.metaCostsSimple) : []
 
   return (
     <div className="dashboard-layout">
@@ -161,7 +170,7 @@ export default function Home() {
               {[...Array(4)].map((_,i)=><div key={i} className="skeleton" style={{height:120}}/>)}
             </div>
           ):<>
-            {tab==='overview'&&<OverviewTab leads={filteredLeads} googleCosts={filteredGoogle} metaCosts={filteredMeta}/>}
+            {tab==='overview'&&<OverviewTab leads={filteredLeads} googleCosts={filteredGoogleSimple} metaCosts={filteredMetaSimple}/>}
             {tab==='google'&&<GoogleTab leads={filteredLeads.filter(r=>r.plataforma.toLowerCase().includes('google'))} costs={filteredGoogle}/>}
             {tab==='meta'&&<MetaTab leads={filteredLeads.filter(r=>r.plataforma.toLowerCase().includes('meta')||r.plataforma.toLowerCase().includes('facebook')||r.plataforma.toLowerCase().includes('instagram')||r.plataforma.toLowerCase()==='fb')} costs={filteredMeta}/>}
           </>}
