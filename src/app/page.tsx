@@ -4,6 +4,7 @@ import OverviewTab from '@/components/OverviewTab'
 import GoogleTab from '@/components/GoogleTab'
 import MetaTab from '@/components/MetaTab'
 import { LeadRow, CostRow } from '@/lib/data'
+import { LOGO_B64 } from '@/lib/logo'
 
 type Tab = 'overview' | 'google' | 'meta'
 interface DashData { leads: LeadRow[]; googleCosts: CostRow[]; metaCosts: CostRow[] }
@@ -38,10 +39,10 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     <div className="login-wrap">
       <div className="login-card">
         <div className="login-logo">
-          <img src="/logo.png" alt="UNINASSAU" style={{ width: 180, marginBottom: 8 }} />
-          <div style={{ fontSize: 12, color: 'var(--text2)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Performance Dashboard</div>
+          <img src={LOGO_B64} alt="UNINASSAU" style={{ width: 200, marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
+          <div style={{ fontSize: 12, color: 'var(--text2)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center' }}>Performance Dashboard</div>
         </div>
-        <form onSubmit={submit}>
+        <form onSubmit={submit} style={{ marginTop: 24 }}>
           <div className="login-field">
             <label>Senha de acesso</label>
             <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="••••••••••••" autoFocus />
@@ -96,7 +97,6 @@ export default function Home() {
     if (plataforma !== 'all' && r.plataforma !== plataforma) return false
     return true
   })
-
   const filterCosts = (rows: CostRow[]) => rows.filter(r => {
     if (dateFrom) { const [y,m,d] = dateFrom.split('-').map(Number); if (r.dateObj < new Date(y,m-1,d)) return false }
     if (dateTo) { const [y,m,d] = dateTo.split('-').map(Number); if (r.dateObj > new Date(y,m-1,d,23,59,59)) return false }
@@ -111,23 +111,19 @@ export default function Home() {
     <div className="dashboard-layout">
       <aside style={{ width:220, flexShrink:0, background:'#0F1C2E', borderRight:'1px solid #1E2D45', display:'flex', flexDirection:'column', padding:'24px 0', position:'fixed', top:0, left:0, bottom:0, zIndex:100 }}>
         <div style={{ padding:'0 20px 24px', borderBottom:'1px solid #1E2D45', marginBottom:16 }}>
-          <img src="/logo.png" alt="UNINASSAU" style={{ width:'100%', maxWidth:160, filter:'brightness(0) invert(1)' }} />
+          <img src={LOGO_B64} alt="UNINASSAU" style={{ width:'100%', maxWidth:160, filter:'brightness(0) invert(1)' }} />
           <div style={{ fontSize:10, color:'#3D5070', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', marginTop:6 }}>Pós ao Vivo</div>
         </div>
-
         {([
           { id:'overview', label:'Visão Geral', icon:<span style={{fontSize:16}}>◈</span> },
           { id:'google',   label:'Google Ads',  icon:<GoogleIcon /> },
           { id:'meta',     label:'Meta Ads',    icon:<MetaIcon /> },
         ] as {id:Tab,label:string,icon:React.ReactNode}[]).map(item => (
-          <button key={item.id}
-            onClick={() => setTab(item.id)}
-            style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', color: tab===item.id ? '#38BDF8' : '#7A90B0', background: tab===item.id ? 'rgba(14,165,233,0.08)' : 'transparent', border:'none', width:'100%', textAlign:'left', cursor:'pointer', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', borderLeft: tab===item.id ? '3px solid #0EA5E9' : '3px solid transparent', transition:'all 0.15s' }}
-          >
+          <button key={item.id} onClick={() => setTab(item.id)}
+            style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', color:tab===item.id?'#38BDF8':'#7A90B0', background:tab===item.id?'rgba(14,165,233,0.08)':'transparent', border:'none', width:'100%', textAlign:'left', cursor:'pointer', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', borderLeft:tab===item.id?'3px solid #0EA5E9':'3px solid transparent', transition:'all 0.15s' }}>
             {item.icon}<span>{item.label}</span>
           </button>
         ))}
-
         <div style={{ marginTop:'auto', padding:'16px 20px 0', borderTop:'1px solid #1E2D45' }}>
           {lastUpdate && (
             <div style={{ fontSize:10, color:'#3D5070', lineHeight:1.5 }}>
@@ -147,40 +143,27 @@ export default function Home() {
       <div className="main-content">
         <div className="topbar">
           <div className="topbar-title" style={{ color:'#0F1C2E', display:'flex', alignItems:'center', gap:8 }}>
-            {tab === 'overview' ? 'Visão Geral' : tab === 'google' ? <><GoogleIcon /> Google Ads</> : <><MetaIcon /> Meta Ads</>}
+            {tab==='overview'?'Visão Geral':tab==='google'?<><GoogleIcon/>Google Ads</>:<><MetaIcon/>Meta Ads</>}
           </div>
           <div className="topbar-filters">
-            <div className="filter-group"><label>De</label><input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} /></div>
-            <div className="filter-group"><label>Até</label><input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} /></div>
-            {tab === 'overview' && (<>
-              <div className="filter-group">
-                <label>Fonte</label>
-                <select value={fonte} onChange={e => setFonte(e.target.value)}>
-                  {fontes.map(f => <option key={f} value={f}>{f === 'all' ? 'Todas' : f}</option>)}
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Plataforma</label>
-                <select value={plataforma} onChange={e => setPlataforma(e.target.value)}>
-                  {plataformas.map(p => <option key={p} value={p}>{p === 'all' ? 'Todas' : p}</option>)}
-                </select>
-              </div>
-            </>)}
-            {(dateFrom || dateTo || fonte !== 'all' || plataforma !== 'all') && (
-              <button className="btn-reset" onClick={() => { setDateFrom(''); setDateTo(''); setFonte('all'); setPlataforma('all') }}>✕ Limpar</button>
-            )}
+            <div className="filter-group"><label>De</label><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)}/></div>
+            <div className="filter-group"><label>Até</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)}/></div>
+            {tab==='overview'&&<>
+              <div className="filter-group"><label>Fonte</label><select value={fonte} onChange={e=>setFonte(e.target.value)}>{fontes.map(f=><option key={f} value={f}>{f==='all'?'Todas':f}</option>)}</select></div>
+              <div className="filter-group"><label>Plataforma</label><select value={plataforma} onChange={e=>setPlataforma(e.target.value)}>{plataformas.map(p=><option key={p} value={p}>{p==='all'?'Todas':p}</option>)}</select></div>
+            </>}
+            {(dateFrom||dateTo||fonte!=='all'||plataforma!=='all')&&<button className="btn-reset" onClick={()=>{setDateFrom('');setDateTo('');setFonte('all');setPlataforma('all')}}>✕ Limpar</button>}
           </div>
         </div>
-
         <div className="page-content">
-          {loading && !data ? (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16, marginBottom:24 }}>
-              {[...Array(4)].map((_,i) => <div key={i} className="skeleton" style={{ height:120 }} />)}
+          {loading&&!data?(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:24}}>
+              {[...Array(4)].map((_,i)=><div key={i} className="skeleton" style={{height:120}}/>)}
             </div>
-          ) : <>
-            {tab === 'overview' && <OverviewTab leads={filteredLeads} googleCosts={filteredGoogle} metaCosts={filteredMeta} />}
-            {tab === 'google' && <GoogleTab leads={filteredLeads.filter(r => r.plataforma.toLowerCase().includes('google'))} costs={filteredGoogle} />}
-            {tab === 'meta' && <MetaTab leads={filteredLeads.filter(r => r.plataforma.toLowerCase().includes('meta') || r.plataforma.toLowerCase().includes('facebook') || r.plataforma.toLowerCase().includes('instagram') || r.plataforma.toLowerCase() === 'fb')} costs={filteredMeta} />}
+          ):<>
+            {tab==='overview'&&<OverviewTab leads={filteredLeads} googleCosts={filteredGoogle} metaCosts={filteredMeta}/>}
+            {tab==='google'&&<GoogleTab leads={filteredLeads.filter(r=>r.plataforma.toLowerCase().includes('google'))} costs={filteredGoogle}/>}
+            {tab==='meta'&&<MetaTab leads={filteredLeads.filter(r=>r.plataforma.toLowerCase().includes('meta')||r.plataforma.toLowerCase().includes('facebook')||r.plataforma.toLowerCase().includes('instagram')||r.plataforma.toLowerCase()==='fb')} costs={filteredMeta}/>}
           </>}
         </div>
       </div>
