@@ -73,11 +73,12 @@ function parseDate(str: string): Date {
   const s = str.trim().split(' ')[0]
   const parts = s.split('/')
   if (parts.length === 3 && parts[2].length === 4) {
-    return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+    // DD/MM/YYYY — força meio-dia para evitar bug de timezone
+    return new Date(`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T12:00:00`)
   }
   const parts2 = s.split('-')
   if (parts2.length === 3 && parts2[0].length === 4) {
-    return new Date(Number(parts2[0]), Number(parts2[1]) - 1, Number(parts2[2]))
+    return new Date(`${parts2[0]}-${parts2[1]}-${parts2[2]}T12:00:00`)
   }
   return new Date(0)
 }
