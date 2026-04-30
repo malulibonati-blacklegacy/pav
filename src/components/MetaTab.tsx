@@ -155,7 +155,29 @@ export default function MetaTab({ leads, costs }: Props) {
             <Legend wrapperStyle={{fontSize:12,color:'#3D5070',fontFamily:F}}/>
             <Area yAxisId="left" type="monotone" dataKey="Leads" stroke="#A78BFA" strokeWidth={2} fill="url(#mL)" dot={false}/>
             <Area yAxisId="right" type="monotone" dataKey="Investimento" stroke="#34D399" strokeWidth={2} fill="url(#mI)" dot={false}/>
-            <Line yAxisId="left" type="monotone" dataKey="Cliques" stroke="#22D3EE" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
+
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Impressões x Cliques x CTR */}
+      <div className="chart-card animate-fadeUp animate-delay-2" style={{marginBottom:16}}>
+        <div className="chart-header"><div><div className="chart-title">Impressões & Cliques & CTR por Dia</div><div className="chart-subtitle">Volume de impressões, cliques e taxa de cliques</div></div></div>
+        <ResponsiveContainer width="100%" height={240}>
+          <ComposedChart data={byDay} margin={{top:5,right:10,left:0,bottom:5}}>
+            <defs>
+              <linearGradient id="mImp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C4B5FD" stopOpacity={0.2}/><stop offset="95%" stopColor="#C4B5FD" stopOpacity={0}/></linearGradient>
+              <linearGradient id="mCliq" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22D3EE" stopOpacity={0.15}/><stop offset="95%" stopColor="#22D3EE" stopOpacity={0}/></linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E8EDF5"/>
+            <XAxis dataKey="date" tick={{fill:'#7A90B0',fontSize:10,fontFamily:F}} axisLine={false} tickLine={false}/>
+            <YAxis yAxisId="left" tick={{fill:'#7A90B0',fontSize:10,fontFamily:F}} axisLine={false} tickLine={false} tickFormatter={v=>formatK(v)}/>
+            <YAxis yAxisId="right" orientation="right" tick={{fill:'#7A90B0',fontSize:10,fontFamily:F}} axisLine={false} tickLine={false} tickFormatter={v=>`${v.toFixed(1)}%`}/>
+            <Tooltip content={<CT fmt={fmtVal}/>}/>
+            <Legend wrapperStyle={{fontSize:12,color:'#3D5070',fontFamily:F}}/>
+            <Area yAxisId="left" type="monotone" dataKey="Impressões" stroke="#A78BFA" strokeWidth={2} fill="url(#mImp)" dot={false}/>
+            <Area yAxisId="left" type="monotone" dataKey="Cliques" stroke="#22D3EE" strokeWidth={2} fill="url(#mCliq)" dot={false}/>
+            <Line yAxisId="right" type="monotone" dataKey="CTR" stroke="#FB923C" strokeWidth={2} dot={false}/>
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -163,15 +185,18 @@ export default function MetaTab({ leads, costs }: Props) {
       {/* CPL + CTR */}
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:24}}>
         <div className="chart-card animate-fadeUp animate-delay-2">
-          <div className="chart-header"><div><div className="chart-title">CPL por Dia</div><div className="chart-subtitle">Custo por lead diário</div></div></div>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={byDay.filter(d=>d.CPL>0)} margin={{top:5,right:10,left:0,bottom:5}}>
+          <div className="chart-header"><div><div className="chart-title">CPL & Investimento por Dia</div><div className="chart-subtitle">Custo por lead e investimento diário</div></div></div>
+          <ResponsiveContainer width="100%" height={200}>
+            <ComposedChart data={byDay.filter(d=>d.CPL>0)} margin={{top:5,right:10,left:0,bottom:5}}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8EDF5"/>
               <XAxis dataKey="date" tick={{fill:'#7A90B0',fontSize:9,fontFamily:F}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:'#7A90B0',fontSize:9,fontFamily:F}} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v.toFixed(0)}`}/>
+              <YAxis yAxisId="left" tick={{fill:'#7A90B0',fontSize:9,fontFamily:F}} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v.toFixed(0)}`}/>
+              <YAxis yAxisId="right" orientation="right" tick={{fill:'#7A90B0',fontSize:9,fontFamily:F}} axisLine={false} tickLine={false} tickFormatter={v=>`R$${(v/1000).toFixed(1)}k`}/>
               <Tooltip content={<CT fmt={fmtVal}/>}/>
-              <Line type="monotone" dataKey="CPL" stroke="#FB923C" strokeWidth={2.5} dot={{fill:'#FB923C',r:3}} activeDot={{r:5}}/>
-            </LineChart>
+              <Legend wrapperStyle={{fontSize:11,color:'#3D5070',fontFamily:F}}/>
+              <Line yAxisId="left" type="monotone" dataKey="CPL" stroke="#FB923C" strokeWidth={2.5} dot={{fill:'#FB923C',r:3}} activeDot={{r:5}}/>
+              <Line yAxisId="right" type="monotone" dataKey="Investimento" stroke="#34D399" strokeWidth={2} dot={false} strokeDasharray="4 2"/>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div className="chart-card animate-fadeUp animate-delay-2">
